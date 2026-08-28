@@ -1,0 +1,353 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:m="clr-namespace:SpaceMaker.Models"
+        mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
+        x:Class="SpaceMaker.MainWindow"
+        Title="空间魔术师"
+        Width="900" Height="600"
+        MinWidth="760" MinHeight="500"
+        Background="{DynamicResource WindowBackground}"
+        Foreground="{DynamicResource TextForeground}"
+        WindowStartupLocation="CenterScreen">
+
+    <!-- 根容器：单一单元格。MainGrid 负责布局，OverlayLayer 作为顶层兄弟全窗口覆盖。 -->
+    <Grid>
+        <!-- 主布局：侧栏(列0) + 内容(列1)，侧栏宽度动画展开/收起。 -->
+        <Grid Name="MainGrid" ColumnDefinitions="Auto,*">
+            <!-- 侧栏 -->
+            <Grid Grid.Column="0" Name="Sidebar" Width="220" Background="{DynamicResource SidebarBackground}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0" Padding="20,20,20,16">
+                    <TextBlock Text="空间魔术师"
+                               FontSize="20"
+                               FontWeight="Bold"
+                               Foreground="{DynamicResource TextForeground}"
+                               VerticalAlignment="Center" />
+                </Border>
+
+                <StackPanel Grid.Row="1" Spacing="4" Margin="14,4,14,14">
+                    <Border Classes="NavItem"
+                            Name="NavHome"
+                            PointerPressed="NavHome_Click">
+                        <TextBlock Text="主页"
+                                   FontSize="15"
+                                   FontWeight="SemiBold"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" />
+                    </Border>
+
+                    <Border Classes="NavItem"
+                            Name="NavSettings"
+                            PointerPressed="NavSettings_Click">
+                        <TextBlock Text="设置"
+                                   FontSize="15"
+                                   FontWeight="SemiBold"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" />
+                    </Border>
+
+                    <Border Classes="NavItem"
+                            Name="NavAbout"
+                            PointerPressed="NavAbout_Click">
+                        <TextBlock Text="关于"
+                                   FontSize="15"
+                                   FontWeight="SemiBold"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" />
+                    </Border>
+                </StackPanel>
+            </Grid>
+
+            <!-- 内容区：顶部工具栏(仅一个折叠手柄) + 滚动内容 -->
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- 顶部工具栏：仅保留一个侧栏折叠手柄 -->
+                <Grid Grid.Row="0" Height="52" Background="{DynamicResource WindowBackground}">
+                    <Button Name="BtnToggleSidebar"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Margin="14,0,0,0"
+                            Width="36" Height="34"
+                            Padding="0"
+                            Click="BtnToggleSidebar_Click"
+                            Background="{DynamicResource PanelBackground}"
+                            BorderBrush="{DynamicResource AppBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            VerticalContentAlignment="Center"
+                            HorizontalContentAlignment="Center"
+                            ToolTip.Tip="折叠/展开侧栏">
+                        <Path Name="ToggleSidebarIconPath"
+                              Width="16" Height="16"
+                              Stretch="Uniform"
+                              Stroke="{DynamicResource TextForeground}"
+                              StrokeThickness="2"
+                              Data="M 11 3 L 6 8 L 11 13" />
+                    </Button>
+                </Grid>
+
+                <!-- 滚动内容 -->
+                <ScrollViewer Grid.Row="1"
+                              Background="{DynamicResource WindowBackground}"
+                              Padding="28,12,28,28"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <Grid>
+                        <!-- 主页 -->
+                        <StackPanel Name="HomePanel" Spacing="20">
+                            <TextBlock Text="硬盘空间占用"
+                                       FontSize="22"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource TextForeground}" />
+
+                            <!-- 管理员状态卡片 -->
+                            <Border Classes="Card" Padding="16,12">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0"
+                                               Name="AdminStatusText"
+                                               Text="正在检查权限..."
+                                               FontSize="14"
+                                               VerticalAlignment="Center"
+                                               TextWrapping="Wrap" />
+                                    <Button Grid.Column="1"
+                                            Name="BtnElevate"
+                                            Content="以管理员重启"
+                                            Click="BtnElevate_Click"
+                                            IsVisible="False" />
+                                </Grid>
+                            </Border>
+
+                            <!-- 控制卡片 -->
+                            <Border Classes="Card">
+                                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="100,*" RowSpacing="16">
+                                    <TextBlock Grid.Row="0" Grid.Column="0"
+                                               Text="选择磁盘"
+                                               VerticalAlignment="Center"
+                                               FontSize="14" />
+                                    <ComboBox Grid.Row="0" Grid.Column="1"
+                                              Name="DriveBox"
+                                              SelectionChanged="DriveBox_SelectionChanged" />
+
+                                    <TextBlock Grid.Row="1" Grid.Column="0"
+                                               Text="占用模式"
+                                               VerticalAlignment="Center"
+                                               FontSize="14" />
+                                    <ComboBox Grid.Row="1" Grid.Column="1"
+                                              Name="ModeBox"
+                                              SelectionChanged="ModeBox_SelectionChanged" />
+
+                                    <TextBlock Grid.Row="2" Grid.Column="0"
+                                               Text="大小 (GB)"
+                                               VerticalAlignment="Center"
+                                               FontSize="14" />
+                                    <NumericUpDown Grid.Row="2" Grid.Column="1"
+                                                   Name="SizeBox"
+                                                   Value="10" />
+
+                                    <TextBlock Grid.Row="3" Grid.Column="0"
+                                               Text="快捷"
+                                               VerticalAlignment="Center"
+                                               FontSize="14" />
+                                    <StackPanel Grid.Row="3" Grid.Column="1"
+                                                Orientation="Horizontal" Spacing="10">
+                                        <Button Classes="Quick" Content="1GB" Click="Quick1_Click" />
+                                        <Button Classes="Quick" Content="10GB" Click="Quick10_Click" />
+                                        <Button Classes="Quick" Content="50GB" Click="Quick50_Click" />
+                                        <Button Classes="Quick" Content="100GB" Click="Quick100_Click" />
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Row="4" Grid.Column="1"
+                                                Orientation="Horizontal" Spacing="14" Margin="0,8,0,0">
+                                        <Button Content="占用空间" Click="BtnOccupy_Click" />
+                                        <Button Classes="Secondary" Content="释放全部" Click="BtnReleaseAll_Click" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <!-- 真占用特权提示 + 自动提权 / 恢复默认按钮 -->
+                            <Border Classes="Card" Name="RealModeHint" IsVisible="False" Padding="16,12">
+                                <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*" RowSpacing="14">
+                                    <StackPanel Grid.Row="0" Spacing="8">
+                                        <TextBlock FontSize="13"
+                                                   Foreground="{DynamicResource SubTextForeground}"
+                                                   TextWrapping="Wrap">
+                                            <Run FontWeight="SemiBold" Foreground="{DynamicResource TextForeground}">真占用需要系统特权</Run>
+                                            <Run>SeManageVolumePrivilege（执行卷维护任务）。仅有管理员身份还不够。</Run>
+                                        </TextBlock>
+                                        <TextBlock FontSize="13"
+                                                   Foreground="{DynamicResource SubTextForeground}"
+                                                   TextWrapping="Wrap"
+                                                   Text="占用时若报「Win32 错误 1314」，说明当前账户尚未被授予该特权。" />
+                                        <TextBlock FontSize="13"
+                                                   Foreground="{DynamicResource SubTextForeground}"
+                                                   TextWrapping="Wrap">
+                                            <Run>点击下方</Run>
+                                            <Run FontWeight="SemiBold" Foreground="{DynamicResource TextForeground}">自动授予卷维护特权</Run>
+                                            <Run>，会弹出 UAC 并把该特权写入当前账户。写入后需</Run>
+                                            <Run FontWeight="SemiBold" Foreground="{DynamicResource TextForeground}">注销并重新登录</Run>
+                                            <Run>才会生效。</Run>
+                                        </TextBlock>
+                                        <TextBlock FontSize="13"
+                                                   Foreground="{DynamicResource SubTextForeground}"
+                                                   TextWrapping="Wrap">
+                                            <Run>若想还原，点</Run>
+                                            <Run FontWeight="SemiBold" Foreground="{DynamicResource TextForeground}">恢复默认（撤销特权）</Run>
+                                            <Run>即可移除。</Run>
+                                        </TextBlock>
+                                        <TextBlock FontSize="13"
+                                                   Foreground="{DynamicResource SubTextForeground}"
+                                                   TextWrapping="Wrap"
+                                                   Text="也可手动：Win+R 输入 secpol.msc → 本地策略 → 用户权限分配 → 双击「执行卷维护任务」→ 添加当前账户。" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Row="1"
+                                                Orientation="Horizontal"
+                                                HorizontalAlignment="Right"
+                                                Spacing="10">
+                                        <Button Content="自动授予卷维护特权"
+                                                Click="BtnGrantPrivilege_Click" />
+                                        <Button Content="恢复默认（撤销特权）"
+                                                Click="BtnRevokePrivilege_Click" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+
+                            <TextBlock Name="FreeSpaceText"
+                                       Text="可用空间：读取中..."
+                                       FontSize="14"
+                                       Foreground="{DynamicResource SubTextForeground}" />
+
+                            <TextBlock Text="已占用的空间"
+                                       FontSize="16"
+                                       FontWeight="Bold"
+                                       Margin="0,8,0,0" />
+
+                            <ListBox Name="ReservationList"
+                                     Classes="ReservationList"
+                                     SelectionMode="Single"
+                                     Background="Transparent"
+                                     BorderThickness="0"
+                                     Padding="0"
+                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate x:DataType="m:ReservationItem">
+                                        <Border Classes="ReservationCard">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <StackPanel Grid.Column="0" Spacing="4">
+                                                    <TextBlock Text="{Binding DisplayLine1}"
+                                                               FontSize="14"
+                                                               FontWeight="SemiBold" />
+                                                    <TextBlock Text="{Binding DisplayLine2}"
+                                                               FontSize="12"
+                                                               Foreground="{DynamicResource SubTextForeground}" />
+                                                </StackPanel>
+                                                <Button Grid.Column="1"
+                                                        Content="释放"
+                                                        Click="BtnReleaseOne_Click"
+                                                        Tag="{Binding .}"
+                                                        VerticalAlignment="Center"
+                                                        VerticalContentAlignment="Center"
+                                                        HorizontalContentAlignment="Center" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+
+                            <TextBlock Name="EmptyReservationText"
+                                       Text="当前没有占用的空间。"
+                                       FontSize="14"
+                                       Foreground="{DynamicResource SubTextForeground}"
+                                       IsVisible="False" />
+                        </StackPanel>
+
+                        <!-- 设置页 -->
+                        <StackPanel Name="SettingsPanel" Spacing="20" IsVisible="False">
+                            <TextBlock Text="设置"
+                                       FontSize="22"
+                                       FontWeight="Bold" />
+
+                            <Border Classes="Card">
+                                <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="110,*" RowSpacing="20">
+                                    <TextBlock Grid.Row="0" Grid.Column="0"
+                                               Text="主题"
+                                               VerticalAlignment="Center" />
+                                    <CheckBox Grid.Row="0" Grid.Column="1"
+                                              Name="SetDarkCheck"
+                                              Content="使用暗色主题"
+                                              IsCheckedChanged="SetDarkCheck_Changed" />
+
+                                    <TextBlock Grid.Row="1" Grid.Column="0"
+                                               Text="默认磁盘"
+                                               VerticalAlignment="Center" />
+                                    <ComboBox Grid.Row="1" Grid.Column="1" Name="SetDriveBox"
+                                              SelectionChanged="SetDriveBox_SelectionChanged" />
+
+                                    <TextBlock Grid.Row="2" Grid.Column="0"
+                                               Text="默认模式"
+                                               VerticalAlignment="Center" />
+                                    <ComboBox Grid.Row="2" Grid.Column="1" Name="SetModeBox"
+                                              SelectionChanged="SetModeBox_SelectionChanged" />
+
+                                    <TextBlock Grid.Row="3" Grid.Column="0"
+                                               Text="管理员"
+                                               VerticalAlignment="Center" />
+                                    <CheckBox Grid.Row="3" Grid.Column="1"
+                                              Name="SetAutoElevateCheck"
+                                              Content="启动时自动以管理员身份运行"
+                                              IsCheckedChanged="SetAutoElevateCheck_Changed" />
+                                </Grid>
+                            </Border>
+
+                            <TextBlock Name="SettingsSavedText"
+                                       Text="设置已自动保存。"
+                                       Foreground="{DynamicResource AccentTextBrush}"
+                                       IsVisible="False" />
+                        </StackPanel>
+
+                        <!-- 关于页 -->
+                        <StackPanel Name="AboutPanel" Spacing="20" IsVisible="False">
+                            <TextBlock Text="关于"
+                                       FontSize="22"
+                                       FontWeight="Bold" />
+
+                            <Border Classes="Card">
+                                <StackPanel Spacing="16">
+                                    <TextBlock Text="空间魔术师  v1.0.0"
+                                               FontSize="18"
+                                               FontWeight="Bold" />
+                                    <TextBlock Text="一个有趣的小工具：可以假装占用硬盘空间，自定义大小，实际不写入数据，随时能一键变回自由空间。支持三种模式：真占用（SetFileValidData，真正扣减可用空间）、稀疏文件（显示很大但不占空间）、纯界面假装（零权限）。"
+                                               FontSize="14"
+                                               Foreground="{DynamicResource SubTextForeground}"
+                                               TextWrapping="Wrap" />
+                                    <TextBlock Name="UpdateStatusText"
+                                               FontSize="14"
+                                               Foreground="{DynamicResource SubTextForeground}"
+                                               TextWrapping="Wrap" />
+                                    <Button Content="检查更新" Click="BtnCheckUpdate_Click" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+
+        <!-- 浮层遮罩：顶层兄弟，覆盖整个窗口（含侧栏），淡入淡出，点空白处或确定按钮自动淡出 -->
+        <Grid Name="OverlayLayer"
+              IsVisible="False"
+              Opacity="0"
+              Background="#A0000000"
+              PointerPressed="OverlayLayer_PointerPressed">
+        </Grid>
+    </Grid>
+</Window>

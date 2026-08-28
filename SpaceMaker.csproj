@@ -1,0 +1,53 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <UseWindowsForms>false</UseWindowsForms>
+  </PropertyGroup>
+
+  <!-- 依赖框架发布（framework-dependent）：不再打包 .NET 运行时，显著缩减体积。
+       运行时缺失由 SpaceMaker.Launcher.cmd 在启动前检测并引导用户下载。
+       Release 发布时删除巨大的 native PDB（如 libSkiaSharp.pdb），对运行无影响。 -->
+  <PropertyGroup>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>false</SelfContained>
+    <PublishReadyToRun>false</PublishReadyToRun>
+    <PublishTrimmed>false</PublishTrimmed>
+    <AssemblyName>SpaceMaker</AssemblyName>
+    <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
+    <!-- 无其它工程引用本程序集，不需要引用程序集。
+         关闭后绕开 Avalonia 构建任务里"删除 ref 程序集"的已知竞态
+         （ref\SpaceMaker.dll 被编译器句柄占用导致 MSB3061 访问被拒）。 -->
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- 启动器：发布时一并复制到输出目录，便于用户在没有安装 .NET 9 运行时时使用。 -->
+    <Content Include="SpaceMaker.Launcher.cmd" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.1.1" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.1" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.1" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.1" />
+    <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3">
+      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!-- Release 发布时删除 native PDB，可让发布目录从约 130MB 降到约 30MB。 -->
+  <Target Name="RemovePublishPdbFiles" AfterTargets="Publish" Condition="'$(Configuration)' == 'Release'">
+    <ItemGroup>
+      <PublishPdbFiles Include="$(PublishDir)*.pdb" />
+    </ItemGroup>
+    <Delete Files="@(PublishPdbFiles)" />
+  </Target>
+</Project>

@@ -1,0 +1,28 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="SpaceMaker.App"
+             RequestedThemeVariant="Dark">
+
+    <!-- 主题色资源：运行时由 App.ApplyTheme 切换亮/暗 -->
+    <Application.Resources>
+        <SolidColorBrush x:Key="WindowBackground" Color="#1F1F1F" />
+        <SolidColorBrush x:Key="SidebarBackground" Color="#252525" />
+        <SolidColorBrush x:Key="CardBackground" Color="#2D2D2D" />
+        <SolidColorBrush x:Key="PanelBackground" Color="#373737" />
+        <SolidColorBrush x:Key="PanelHoverBackground" Color="#4A4A4A" />
+        <SolidColorBrush x:Key="TextForeground" Color="#F5F5F5" />
+        <SolidColorBrush x:Key="SubTextForeground" Color="#A6A6A6" />
+        <SolidColorBrush x:Key="AppBorderBrush" Color="#3A3A3A" />
+        <SolidColorBrush x:Key="PrimaryBrush" Color="#0A84FF" />
+        <SolidColorBrush x:Key="PrimaryHoverBrush" Color="#40A0FF" />
+        <SolidColorBrush x:Key="AccentTextBrush" Color="#5AB4FF" />
+        <SolidColorBrush x:Key="NavActiveBackground" Color="#2A3548" />
+        <SolidColorBrush x:Key="NavActiveTextBrush" Color="#5AB4FF" />
+        <SolidColorBrush x:Key="NavHoverBackground" Color="#323232" />
+    </Application.Resources>
+
+    <Application.Styles>
+        <FluentTheme />
+        <StyleInclude Source="/AppStyles.axaml" />
+    </Application.Styles>
+</Application>
