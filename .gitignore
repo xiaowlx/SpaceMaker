@@ -1,0 +1,23 @@
+# 编译 / 发布产物
+bin/
+obj/
+publish_build/
+
+# 单文件发布生成的 144MB exe 不进仓库
+*.exe
+
+# IDE / 系统
+.vs/
+.idea/
+*.user
+*.suo
+
+# 本地数据（运行时生成，含占用记录与设置）
+AppData/
+
+# 日志
+*.log
+crash.log
+
+# 打包缓存
+*.zip
