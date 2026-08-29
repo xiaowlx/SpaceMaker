@@ -45,7 +45,7 @@
 
 ### 方案 B：独立运行（体积大）
 
-如果你希望用户不装任何运行时，可改为自包含单文件发布（见下方"构建"命令）。产物约 130 MB，不再依赖系统运行时。
+自包含单文件发布，不依赖系统运行时，产物约 130 MB，命令见下方「构建与发布」。
 
 ## 构建与发布
 
@@ -102,40 +102,6 @@ SpaceMaker/
 ```
 
 `.gitignore` 已把 `bin/`、`obj/`、`publish_build/`、`*.exe`、`crash.log` 排除在外，因此直接 `git push` 只会上传源码与 README。
-
-## 上传到 GitHub 的步骤
-
-1. **注册/登录 GitHub**：
-   打开 https://github.com/signup 注册账号。仓库上传需要账号，我无法替你注册。
-
-2. **创建空仓库**：
-   进入 https://github.com/new，填写仓库名如 `SpaceMaker`，选择 **Public**，**不要**勾选 "Initialize this repository with a README"（因为本地已有 README）。
-
-3. **配置本地仓库远程地址**（本仓库已按此配置好，仅供参考）：
-
-   ```bash
-   # 设置提交者信息（建议用你注册 GitHub 的邮箱）
-   git config user.email "you@example.com"
-   git config user.name "Your Name"
-
-   # 添加远程仓库
-   git remote add origin https://github.com/xiaowlx/SpaceMaker.git
-   git branch -M main
-   ```
-
-4. **推送源码**：
-
-   ```bash
-   git push -u origin main
-   ```
-
-5. **创建 Release 并上传 exe**：
-   - 在 GitHub 仓库页点击右侧 **Releases → Create a new release**。
-   - 输入 Tag，例如 `v1.0.0`。
-   - 标题填 `SpaceMaker v1.0.0`，正文简要介绍本次更新。
-   - 把 `publish_build/` 里的 `SpaceMaker.exe`、`SpaceMaker.Launcher.cmd` 及所需 DLL 一起打包成 zip，拖到 **Assets** 区域上传；用户下载 zip 解压后即可运行。
-
-> 提示：本仓库源码位于 https://github.com/xiaowlx/SpaceMaker ，`publish_build/` 中的可执行程序以 Release 附件形式提供下载。
 
 ## 许可证
 
