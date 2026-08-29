@@ -116,11 +116,6 @@ namespace SpaceMaker
 
             // 真占用提示卡初始可见性：仅当默认模式为"真占用"(索引 0) 时显示。
             RealModeHint.IsVisible = ModeBox.SelectedIndex == 0;
-
-            // 禁用鼠标滚轮切换模式：仅允许鼠标点选，避免滚轮误触改变模式。
-            // 用 Tunnel 路由在 ComboBox 内部处理之前拦截并标记事件已处理。
-            ModeBox.AddHandler(InputElement.PointerWheelChangedEvent, BlockWheel, RoutingStrategies.Tunnel);
-            SetModeBox.AddHandler(InputElement.PointerWheelChangedEvent, BlockWheel, RoutingStrategies.Tunnel);
         }
 
         private void ModeBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -128,9 +123,6 @@ namespace SpaceMaker
             // 索引 0 = 真占用：显示特权提示与自动提权按钮；其它模式隐藏。
             RealModeHint.IsVisible = ModeBox.SelectedIndex == 0;
         }
-
-        /// <summary>拦截 ComboBox 的鼠标滚轮事件，标记为已处理，避免滚轮误触切换模式。</summary>
-        private static void BlockWheel(object? sender, PointerWheelEventArgs e) => e.Handled = true;
 
         private void RefreshAdminStatus()
         {

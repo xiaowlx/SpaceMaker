@@ -3,6 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:m="clr-namespace:SpaceMaker.Models"
+        xmlns:local="clr-namespace:SpaceMaker"
         mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
         x:Class="SpaceMaker.MainWindow"
         Title="空间魔术师"
@@ -142,7 +143,7 @@
                                                Text="占用模式"
                                                VerticalAlignment="Center"
                                                FontSize="14" />
-                                    <ComboBox Grid.Row="1" Grid.Column="1"
+                                    <local:NoWheelComboBox Grid.Row="1" Grid.Column="1"
                                               Name="ModeBox"
                                               SelectionChanged="ModeBox_SelectionChanged" />
 
@@ -295,7 +296,7 @@
                                     <TextBlock Grid.Row="2" Grid.Column="0"
                                                Text="默认模式"
                                                VerticalAlignment="Center" />
-                                    <ComboBox Grid.Row="2" Grid.Column="1" Name="SetModeBox"
+                                    <local:NoWheelComboBox Grid.Row="2" Grid.Column="1" Name="SetModeBox"
                                               SelectionChanged="SetModeBox_SelectionChanged" />
 
                                     <TextBlock Grid.Row="3" Grid.Column="0"
