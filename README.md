@@ -4,6 +4,44 @@
 
 ![SpaceMaker icon](Assets/icon.ico)
 
+## 下载：该选哪个版本？
+
+每次发布都提供两个包，**功能完全一样**，区别只有一件事：**要不要先装 .NET 9 运行时**。
+
+| | 依赖框架版（framework） | 独立版（standalone） |
+| --- | --- | --- |
+| 文件 | `SpaceMaker-v2.0.1-win-x64-framework.zip` | `SpaceMaker-v2.0.1-win-x64-standalone.zip` |
+| 压缩包体积 | 约 12 MB | 约 45 MB |
+| 解压后 | 约 30 MB / 35 个文件 | 约 100 MB / 200+ 个文件 |
+| 要先装 .NET 9 运行时 | **要** | **不要** |
+| 解压后怎么启动 | 有运行时就双击 `SpaceMaker.exe`；不确定就双击 `SpaceMaker.Launcher.cmd` | 直接双击 `SpaceMaker.exe` |
+
+### 一句话选择
+
+- **不确定电脑有没有 .NET 9，或者不想折腾** → 下 **独立版**，解压即用。
+- **知道自己装了 .NET 9（或愿意花一分钟装一次）** → 下 **依赖框架版**，体积小得多，以后升级也只换几个文件。
+- **要拷到别人电脑、离线机器、PE/测试环境** → 下 **独立版**，那边不一定有运行时，也不一定有网。
+- **本机长期自用、追求精简** → 下 **依赖框架版**。
+
+### 怎么知道有没有装 .NET 9？
+
+在终端（PowerShell / 命令提示符）里执行：
+
+```
+dotnet --list-runtimes
+```
+
+看输出里有没有以 `Microsoft.NETCore.App 9.` 开头的行。有就装了，没有就没装。
+（SpaceMaker 基于 Avalonia，不需要 WPF/WinForms 的 WindowsDesktop 运行时，普通 .NET Runtime 就够。）
+
+更简单的方法：解压依赖框架版后双击 `SpaceMaker.Launcher.cmd` —— 它会自动检测，装了就直接启动程序，没装就打开官方下载页。
+
+> .NET 9 是标准支持（STS）版本，2026 年 11 月 10 日终止支持。运行时本身不随 Windows 11 预装，需要单独安装一次。
+
+### 下载
+
+👉 <https://github.com/xiaowlx/SpaceMaker/releases/latest>
+
 ## 功能特性
 
 - 两种占用模式：真占用 / 稀疏文件
@@ -31,44 +69,53 @@
 - 也可以手动配置：`Win + R` → `secpol.msc` → 本地策略 → 用户权限分配 → 双击「执行卷维护任务」→ 添加账户。
 - 系统内置的 `Administrator` 账户默认就拥有该特权。
 
-## 运行方式
-
-### 方案 A：依赖框架运行（推荐，体积小）
-
-需要目标机器已安装 **.NET 9 Desktop Runtime**（或 SDK）。首次运行前若不确定是否安装，请双击 `SpaceMaker.Launcher.cmd`：
-
-- 已安装 .NET 9 运行时 → 直接启动 `SpaceMaker.exe`
-- 未安装 → 自动打开官方下载页：`https://dotnet.microsoft.com/download/dotnet/9.0`
-
-若已确认安装，可直接双击 `SpaceMaker.exe`。
-
-### 方案 B：独立运行（体积大）
-
-自包含单文件发布，不依赖系统运行时，产物约 130 MB，命令见下方「构建与发布」。
-
 ## 构建与发布
 
-需要 .NET 9 SDK（或更高）。
+需要 .NET 9 SDK（9.0.x）。默认构建出的是**依赖框架版**，加 `-p:SelfContained=true` 出**独立版**：
 
 ```bash
-# 默认发布：依赖框架，产物约 30 MB
-# 输出目录：publish_build/
-dotnet publish -c Release -o publish_build
+# 依赖框架版：产物约 30 MB
+dotnet publish -c Release -o publish-fd
 
-# 独立运行（自包含单文件），产物约 130 MB
-dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o publish_build
+# 独立版：自带 .NET 9 运行时，产物约 100 MB
+dotnet publish -c Release -p:SelfContained=true -o publish-sc
 
 # 调试运行
 dotnet run -c Debug
 ```
 
-发布产物（`publish_build/`）说明：
+Release 构建不带调试符号：本程序集不生成 pdb，NuGet 包里的 native 符号也不复制。否则光一个 `libSkiaSharp.pdb` 就是 84 MB，发布目录会膨胀到 130 MB。
 
-| 文件/目录 | 说明 |
+依赖框架版的产物说明：
+
+| 文件 | 说明 |
 | --- | --- |
-| `SpaceMaker.exe` | 程序入口（apphost，体积约 280 KB） |
-| `SpaceMaker.Launcher.cmd` | 运行前检测 .NET 9 运行时并引导下载 |
+| `SpaceMaker.exe` | 程序入口（apphost，约 280 KB） |
+| `SpaceMaker.Launcher.cmd` | 启动前检测 .NET 9 运行时并引导下载（仅依赖框架版附带） |
 | `*.dll` / `*.json` | Avalonia、Skia 等依赖及运行配置 |
+
+打包分发用的脚本 `pack_release.py` 放在仓库外，用法：
+
+```bash
+python pack_release.py 2.0.1 <依赖框架版目录> <独立版目录> <zip 输出目录>
+```
+
+它会把两个目录分别打成 `SpaceMaker-v2.0.1-win-x64-framework.zip` 与 `SpaceMaker-v2.0.1-win-x64-standalone.zip`。
+
+### 构建时若提示 obj 被占用
+
+出现 `CS2012 无法打开 obj\...\SpaceMaker.dll` 或 `MSB3491 ... Access is denied`，通常是有其它进程（杀软、索引器、上一次残留的编译进程）占住了 obj 里的文件。先关掉常驻编译服务：
+
+```bash
+dotnet build-server shutdown
+```
+
+仍不行就把中间目录挪开，两种模式各用一套：
+
+```bash
+dotnet publish -c Release -p:BaseIntermediateOutputPath=".build\obj-fd\" -p:BaseOutputPath=".build\bin-fd\" -o publish-fd
+dotnet publish -c Release -p:SelfContained=true -p:BaseIntermediateOutputPath=".build\obj-sc\" -p:BaseOutputPath=".build\bin-sc\" -o publish-sc
+```
 
 ## 数据与隐私
 
@@ -92,9 +139,10 @@ SpaceMaker/
 │   ├── Assets/           # 图标、字体等资源
 │   └── SpaceMaker.Launcher.cmd  # 启动脚本
 ├── 发布产物（不应提交到 GitHub）
-│   ├── bin/              # 构建中间输出
-│   ├── obj/              # 编译临时文件
-│   ├── publish_build/    # 最终发布的 exe/dll
+│   ├── bin/ obj/         # 构建中间输出
+│   ├── .build/           # 自定义中间目录（obj 被占用时才用）
+│   ├── publish-fd/       # 依赖框架版产物
+│   ├── publish-sc/       # 独立版产物
 │   └── *.exe             # 生成的可执行文件
 └── 主页/介绍文档（随仓库一起提交）
     └── README.md         # 本说明

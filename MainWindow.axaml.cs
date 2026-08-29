@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Principal;
+using System.Reflection;
 using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Platform;
@@ -24,6 +25,13 @@ namespace SpaceMaker
         private readonly bool _isAdmin;
         private bool _sidebarCollapsed;
 
+        // 界面显示的版本号直接读程序集版本（随 SpaceMaker.csproj 的 <Version> 变化），
+        // 发新版时不必再改界面里的硬编码文本。
+        private static string DisplayVersion =>
+            Assembly.GetExecutingAssembly().GetName().Version is { } v
+                ? $"{v.Major}.{v.Minor}.{v.Build}"
+                : "未知";
+
         public MainWindow()
         {
             _settings = Store.LoadSettings();
@@ -32,6 +40,7 @@ namespace SpaceMaker
                 .IsInRole(WindowsBuiltInRole.Administrator);
 
             InitializeComponent();
+            AppVersionText.Text = $"空间魔术师  v{DisplayVersion}";
             InitializeComboBoxes();
             App.ApplyTheme(_settings.DarkTheme);
             RefreshAdminStatus();

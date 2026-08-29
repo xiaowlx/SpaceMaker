@@ -12,7 +12,7 @@ if "%DOTNET_FOUND%"=="1" (
 )
 
 echo.
-echo  SpaceMaker requires the .NET 9 Desktop Runtime, which was not detected on this PC.
+echo  SpaceMaker requires the .NET 9 Runtime, which was not detected on this PC.
 echo  Opening the official download page now. Please install it and run this launcher again.
 echo.
 start "" "https://dotnet.microsoft.com/download/dotnet/9.0"

@@ -1,7 +1,10 @@
 # 编译 / 发布产物
 bin/
 obj/
+.build/
 publish_build/
+publish-fd/
+publish-sc/
 
 # 单文件发布生成的 144MB exe 不进仓库
 *.exe

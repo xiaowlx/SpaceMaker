@@ -2,14 +2,15 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net9.0-windows</TargetFramework>
-    <Version>2.0.0</Version>
+    <Version>2.0.1</Version>
     <Nullable>enable</Nullable>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <UseWindowsForms>false</UseWindowsForms>
   </PropertyGroup>
 
-  <!-- 依赖框架发布（framework-dependent）：不再打包 .NET 运行时，显著缩减体积。
+  <!-- 默认发布「依赖框架版」（framework-dependent）：不打包 .NET 运行时，体积最小。
        运行时缺失由 SpaceMaker.Launcher.cmd 在启动前检测并引导用户下载。
+       出「独立版」时在命令行覆盖：-p:SelfContained=true
        Release 发布时删除巨大的 native PDB（如 libSkiaSharp.pdb），对运行无影响。 -->
   <PropertyGroup>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
@@ -28,9 +29,16 @@
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
 
+  <!-- 若想让两种模式各用一套中间目录（避免交替构建时 obj 里的文件被上一次的
+       构建进程占住），可用命令行覆盖：
+         -p:BaseIntermediateOutputPath=".build\obj-fd\" -p:BaseOutputPath=".build\bin-fd\"
+       文件末尾的 ExcludeBuildDirsFromCompile 会顺带把 .build\** 从源码里排除。
+       注意：该路径必须在 Directory.Build.props 里设置才不会有 MSB3539 警告。 -->
+
   <ItemGroup>
-    <!-- 启动器：发布时一并复制到输出目录，便于用户在没有安装 .NET 9 运行时时使用。 -->
-    <Content Include="SpaceMaker.Launcher.cmd" CopyToPublishDirectory="PreserveNewest" />
+    <!-- 启动器：仅随「依赖框架版」发布，用于在启动前检测 .NET 9 运行时并引导下载。
+         独立版自带运行时，不需要它，故按 SelfContained 条件排除。 -->
+    <Content Include="SpaceMaker.Launcher.cmd" CopyToPublishDirectory="PreserveNewest" Condition="'$(SelfContained)' != 'true'" />
   </ItemGroup>
 
   <ItemGroup>
@@ -44,11 +52,32 @@
     </PackageReference>
   </ItemGroup>
 
-  <!-- Release 发布时删除 native PDB，可让发布目录从约 130MB 降到约 30MB。 -->
+  <!-- Release 不产出调试符号：DebugType=none 让本程序集不生成 pdb，
+       AllowedReferenceRelatedFileExtensions 去掉 .pdb 使 NuGet 包里的
+       native 符号（如 libSkiaSharp.pdb，单个就 84MB）不再复制到输出。
+       仅这两项即可把发布目录从约 130MB 降到约 30MB。 -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DebugType>none</DebugType>
+    <AllowedReferenceRelatedFileExtensions>.xml</AllowedReferenceRelatedFileExtensions>
+  </PropertyGroup>
+
+  <!-- 兜底：若仍有 pdb 被复制到发布目录，发布后清一遍。
+       -o 传入的 PublishDir 不一定带尾斜杠，这里补齐后再匹配，否则 glob 会落空。 -->
   <Target Name="RemovePublishPdbFiles" AfterTargets="Publish" Condition="'$(Configuration)' == 'Release'">
     <ItemGroup>
-      <PublishPdbFiles Include="$(PublishDir)*.pdb" />
+      <PublishPdbFiles Include="$([MSBuild]::EnsureTrailingSlash('$(PublishDir)'))*.pdb" />
     </ItemGroup>
     <Delete Files="@(PublishPdbFiles)" />
+  </Target>
+
+  <!-- 默认 **\*.cs 的收集发生在 SDK targets 阶段（本项目体之后），项目体里的
+       <Compile Remove> 无效，只能在编译前的 Target 里移除。否则 .build 与 obj
+       下自动生成的 AssemblyInfo.cs 会被当成源码，触发 CS0579 特性重复。 -->
+  <Target Name="ExcludeBuildDirsFromCompile" BeforeTargets="BeforeCompile">
+    <ItemGroup>
+      <Compile Remove=".build\**" />
+      <Compile Remove="obj\**" />
+      <Compile Remove="bin\**" />
+    </ItemGroup>
   </Target>
 </Project>
