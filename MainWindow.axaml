@@ -322,10 +322,10 @@
 
                             <Border Classes="Card">
                                 <StackPanel Spacing="16">
-                                    <TextBlock Text="空间魔术师  v1.0.0"
+                                    <TextBlock Text="空间魔术师  v2.0.0"
                                                FontSize="18"
                                                FontWeight="Bold" />
-                                    <TextBlock Text="一个有趣的小工具：可以假装占用硬盘空间，自定义大小，实际不写入数据，随时能一键变回自由空间。支持三种模式：真占用（SetFileValidData，真正扣减可用空间）、稀疏文件（显示很大但不占空间）、纯界面假装（零权限）。"
+                                    <TextBlock Text="一个有趣的小工具：可以假装占用硬盘空间，自定义大小，实际不写入数据，随时能一键变回自由空间。支持两种模式：真占用（SetFileValidData，真正扣减可用空间）、稀疏文件（显示很大但不占空间）。"
                                                FontSize="14"
                                                Foreground="{DynamicResource SubTextForeground}"
                                                TextWrapping="Wrap" />

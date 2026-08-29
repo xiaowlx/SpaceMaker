@@ -96,10 +96,10 @@ namespace SpaceMaker
 
         private void InitializeComboBoxes()
         {
-            ModeBox.ItemsSource = new[] { "真占用（需管理员）", "稀疏文件（显大不占空间）", "纯界面假装（零权限）" };
+            ModeBox.ItemsSource = new[] { "真占用（需管理员）", "稀疏文件（显大不占空间）" };
             ModeBox.SelectedIndex = (int)_settings.LastMode;
 
-            SetModeBox.ItemsSource = new[] { "真占用（需管理员）", "稀疏文件（显大不占空间）", "纯界面假装（零权限）" };
+            SetModeBox.ItemsSource = new[] { "真占用（需管理员）", "稀疏文件（显大不占空间）" };
             SetModeBox.SelectedIndex = (int)_settings.LastMode;
 
             SetDarkCheck.IsChecked = _settings.DarkTheme;
@@ -493,7 +493,7 @@ namespace SpaceMaker
         {
             OccupyMode.Real => "真占用",
             OccupyMode.Sparse => "稀疏文件",
-            _ => "纯界面"
+            _ => "未知"
         };
 
         private static string FormatSize(long bytes)

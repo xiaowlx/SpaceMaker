@@ -6,15 +6,13 @@ using System.Text.Json.Serialization;
 
 namespace SpaceMaker
 {
-    /// <summary>三种"占用"模式。</summary>
+    /// <summary>两种"占用"模式。</summary>
     internal enum OccupyMode
     {
         /// <summary>真占用：用 SetFileValidData 真正扣减可用空间，不写数据，需管理员。</summary>
         Real,
         /// <summary>稀疏文件：资源管理器显示很大，但不占实际空间。</summary>
-        Sparse,
-        /// <summary>纯界面：完全不碰磁盘，只在本软件里显示。</summary>
-        Visual
+        Sparse
     }
 
     /// <summary>一次占用的记录，持久化到本地以便随时释放。</summary>
@@ -22,7 +20,7 @@ namespace SpaceMaker
     {
         public string Id { get; set; } = "";
         public char Drive { get; set; }
-        public string Path { get; set; } = "";   // Visual 模式为空
+        public string Path { get; set; } = "";   // 指向盘上的保留文件
         public OccupyMode Mode { get; set; }
         public long SizeBytes { get; set; }
         public DateTime CreatedAt { get; set; }

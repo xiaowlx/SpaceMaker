@@ -7,10 +7,9 @@ using Microsoft.Win32.SafeHandles;
 namespace SpaceMaker
 {
     /// <summary>
-    /// 磁盘占用 / 释放的核心逻辑。三种模式：
+    /// 磁盘占用 / 释放的核心逻辑。两种模式：
     ///  - Real   ：SetFileValidData，真正扣空间、不写数据、需管理员。
     ///  - Sparse ：稀疏文件，显示很大但不占空间。
-    ///  - Visual ：纯界面，不碰磁盘。
     /// </summary>
     internal static class DiskEngine
     {
@@ -24,20 +23,6 @@ namespace SpaceMaker
             var id = Guid.NewGuid().ToString("N");
             var dir = ReserveFolderFor(drive);
             var path = Path.Combine(dir, $"reserve_{id}.bin");
-
-            // 纯界面模式：不创建任何文件，仅记录。
-            if (mode == OccupyMode.Visual)
-            {
-                return new Reservation
-                {
-                    Id = id,
-                    Drive = drive,
-                    Path = "",
-                    Mode = mode,
-                    SizeBytes = sizeBytes,
-                    CreatedAt = DateTime.Now
-                };
-            }
 
             try
             {
