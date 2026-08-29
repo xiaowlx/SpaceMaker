@@ -10,7 +10,7 @@
 
 | | 依赖框架版（framework） | 独立版（standalone） |
 | --- | --- | --- |
-| 文件 | `SpaceMaker-v2.0.1-win-x64-framework.zip` | `SpaceMaker-v2.0.1-win-x64-standalone.zip` |
+| 文件 | `SpaceMaker-v<版本>-win-x64-framework.zip` | `SpaceMaker-v<版本>-win-x64-standalone.zip` |
 | 压缩包体积 | 约 12 MB | 约 45 MB |
 | 解压后 | 约 30 MB / 35 个文件 | 约 100 MB / 200+ 个文件 |
 | 要先装 .NET 9 运行时 | **要** | **不要** |
@@ -97,10 +97,10 @@ Release 构建不带调试符号：本程序集不生成 pdb，NuGet 包里的 n
 打包分发用的脚本 `pack_release.py` 放在仓库外，用法：
 
 ```bash
-python pack_release.py 2.0.1 <依赖框架版目录> <独立版目录> <zip 输出目录>
+python pack_release.py <版本> <依赖框架版目录> <独立版目录> <zip 输出目录>
 ```
 
-它会把两个目录分别打成 `SpaceMaker-v2.0.1-win-x64-framework.zip` 与 `SpaceMaker-v2.0.1-win-x64-standalone.zip`。
+它会把两个目录分别打成 `SpaceMaker-v<版本>-win-x64-framework.zip` 与 `SpaceMaker-v<版本>-win-x64-standalone.zip`。
 
 ### 构建时若提示 obj 被占用
 
