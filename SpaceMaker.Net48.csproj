@@ -1,0 +1,97 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    net48 版：Avalonia 12 已放弃 .NET Framework 支持，所以这一套单独用 Avalonia 11.3.x 出包。
+    源码与 SpaceMaker.csproj（net9 / Avalonia 12）完全共享（同目录默认 glob 自动收集 .cs / .axaml）。
+    中间/输出目录重定向到 obj\net48、bin\net48，避免与 net9 主工程的 obj\Release、bin\Release 冲突；
+    obj\、bin\ 已被 .gitignore 忽略，不会污染仓库。
+    DevTools 的 WithDeveloperTools() 是 v12 专属且仅在 DEBUG 编译，Release 发布走不到，故此处不需要它。
+  -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <Version>2.0.4</Version>
+    <Nullable>enable</Nullable>
+    <!-- net48 默认 C# 7.3，必须用 latest 才能编译 file-scoped namespace / nullable 等语法 -->
+    <LangVersion>latest</LangVersion>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <UseWindowsForms>false</UseWindowsForms>
+    <!-- 必须用 RuntimeIdentifier 锁 win-x64：否则 net48 无 RID 时 NuGet 会把
+         所有平台的 native 资产（macOS 的 .dylib、Linux 的 .so）都拷进输出，
+         既撑大体积又带无用跨平台二进制。加 RID 后只选 Windows 原生资产，
+         体积与 net9 依赖框架版相当。PlatformTarget 仍保留以明确 64 位。 -->
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <PlatformTarget>x64</PlatformTarget>
+    <AssemblyName>SpaceMaker</AssemblyName>
+    <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.20" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.20" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.20" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.20" />
+    <!-- 仅 Debug 需要 DevTools；Release 发布不引用，避免 AvaloniaUI.DiagnosticsSupport(v12) 依赖 -->
+    <PackageReference Include="Avalonia.Diagnostics" Version="11.3.20" Condition="'$(Configuration)' == 'Debug'" />
+    <!-- 提供 .NET Framework 4.8 引用程序集，使 SDK 在没装 Targeting Pack 的环境也能编译 net48。
+         必须用元包 Microsoft.NETFramework.ReferenceAssemblies（自带 build targets 设置 FrameworkPathOverride），
+         只引 .net48 叶包只会带程序集、不会接上引用路径。 -->
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+    <!-- net48 不含内置 System.Text.Json（net9 是内置的），需单独引包；代码用了其源生成器(JsonSerializerContext) -->
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
+  </ItemGroup>
+
+  <!-- Release 不产出调试符号 -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DebugType>none</DebugType>
+    <AllowedReferenceRelatedFileExtensions>.xml</AllowedReferenceRelatedFileExtensions>
+  </PropertyGroup>
+
+  <!-- 兜底：发布后清一遍 pdb -->
+  <Target Name="RemovePublishPdbFiles" AfterTargets="Publish" Condition="'$(Configuration)' == 'Release'">
+    <ItemGroup>
+      <PublishPdbFiles Include="$([MSBuild]::EnsureTrailingSlash('$(PublishDir)'))*.pdb" />
+    </ItemGroup>
+    <Delete Files="@(PublishPdbFiles)" />
+  </Target>
+
+  <!-- net48 无法像 net9 那样按 RID 过滤 SkiaSharp / HarfBuzzSharp 的原生资产：
+       发布时会把全部平台的 native 库都拷进输出（arm/arm64/x86/musl-*/loongarch64/
+       riscv64 等约 85MB），还带 macOS 的 .dylib 与 Linux 的 .so。
+       本程序只面向 Windows x64，故只保留根目录的 libSkiaSharp.dll /
+       libHarfBuzzSharp.dll / av_libglesv2.dll 以及 x64\ 下的 .dll，
+       其余平台目录与跨平台二进制一律删除。 -->
+  <Target Name="TrimNonWindowsNativeAssets" AfterTargets="Publish" Condition="'$(Configuration)' == 'Release'">
+    <ItemGroup>
+      <_JunkDirs Include="$(PublishDir)arm" />
+      <_JunkDirs Include="$(PublishDir)arm64" />
+      <_JunkDirs Include="$(PublishDir)x86" />
+      <_JunkDirs Include="$(PublishDir)musl-arm" />
+      <_JunkDirs Include="$(PublishDir)musl-arm64" />
+      <_JunkDirs Include="$(PublishDir)musl-loongarch64" />
+      <_JunkDirs Include="$(PublishDir)musl-riscv64" />
+      <_JunkDirs Include="$(PublishDir)musl-x64" />
+      <_JunkDirs Include="$(PublishDir)loongarch64" />
+      <_JunkDirs Include="$(PublishDir)riscv64" />
+      <_JunkFiles Include="$(PublishDir)*.dylib" />
+      <_JunkFiles Include="$(PublishDir)*.so" />
+      <_JunkFiles Include="$(PublishDir)x64\*.so" />
+      <_JunkFiles Include="$(PublishDir)x64\*.dylib" />
+    </ItemGroup>
+    <RemoveDir Directories="@(_JunkDirs)" />
+    <Delete Files="@(_JunkFiles)" />
+  </Target>
+
+  <!-- 排除主工程（net9）的 obj/bin 下自动生成的 .cs，避免被当成源码重复编译 -->
+  <Target Name="ExcludeBuildDirsFromCompile" BeforeTargets="BeforeCompile">
+    <ItemGroup>
+      <Compile Remove="obj\**" />
+      <Compile Remove="bin\**" />
+      <Compile Remove=".build\**" />
+    </ItemGroup>
+  </Target>
+</Project>

@@ -95,8 +95,8 @@ namespace SpaceMaker
             double workH = screen.WorkingArea.Height / scale;
 
             // 默认占屏幕工作区的 70%，但不超过 1024x700、不小于最小尺寸
-            double w = Math.Clamp(workW * 0.70, MinWidth, Math.Min(1024, workW - 48));
-            double h = Math.Clamp(workH * 0.70, MinHeight, Math.Min(700, workH - 48));
+            double w = Math.Max(MinWidth, Math.Min(workW * 0.70, Math.Min(1024, workW - 48)));
+            double h = Math.Max(MinHeight, Math.Min(workH * 0.70, Math.Min(700, workH - 48)));
 
             Width = w;
             Height = h;
@@ -598,7 +598,7 @@ namespace SpaceMaker
             var sw = Stopwatch.StartNew();
             while (sw.ElapsedMilliseconds < durationMs)
             {
-                var t = Math.Clamp(sw.ElapsedMilliseconds / (double)durationMs, 0, 1);
+                var t = Math.Max(0, Math.Min(sw.ElapsedMilliseconds / (double)durationMs, 1));
                 var eased = t * t * (3 - 2 * t);
                 setter(from + (to - from) * eased);
                 await Task.Delay(16);
